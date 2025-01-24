@@ -105,3 +105,37 @@ ex) 논리 좌표(50, 50), SetWindowExt(100, 100), SetViewportExt(200, 200) -> �
 dc.SetViewportOrg(50, 50); //장치 좌표 원점을 (50, 50)으로 이동
 dc.SetWindowOrg(-10, -10); //논리 좌표 원점을 (-10, -10)으로 이동
 ```
+* 가상의 좌표 활용 예제
+확대/축소 예제 : SetWindowExt와 SetViewportExt를 적절히 설정합니다.
+``` ruby
+void CMyView::OnPaint()
+{
+  CPaintDC dc(this); //DC 생성
+  //맵 모드 설정
+  dc.SetMapMode(MM_ANISOTROPIC);
+  //논리 좌표와 장치 좌표 설정
+  float zoomFactor = 2.0f; //확대 비율(2배 확대)
+  dc.SetWindowExt(100, 100); //논리 좌표계
+  dc.SetViewportExt(100 * zoomFactor, 100 * zoomFactor); //장치 좌표계
+  //논리 좌표로 사각형 그리기
+  dc.Rectangle(10, 10, 90, 90);
+}
+```
+스크롤 구현 예제 : 논리 좌표 원점을 변경해야 합니다. 이를 위해 SetWindowOrg를 사용합니다.
+``` ruby
+void CMyView::OnScroll(int scrollX, int scrollY)
+{
+  CPaintDC dc(this);
+  dc.SetMapMode(MM_ANISOTROPIC);
+  //스크롤에 따른 논리 좌표 원점 이동
+  dc.SetWindowOrg(scrollX, scrollY);
+  //다시 그리기
+  dc.Rectangle(10, 10, 90, 90);
+}
+```
+* mfc 가상의 좌표 장점
+  1. 확장성 : 화면 크기, 해상도에 상관없이 동일한 논리 좌표로 작업 가능
+  2. 확대/축소 : 비율만 변경하면 간단히 구현 가능
+  3. 회전 및 변형 : 원점 및 좌표계 설정을 통해 복잡한 변환도 처리 가능
+
+----------------
