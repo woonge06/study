@@ -62,14 +62,16 @@ void CMyView::OnInitialUpdate()
   //논리 좌표와 장치 좌표 설정
   SetScrollSizes(MM_TEXT, CSize(100 * zoomFactor, 100 * zoomFactor));
 }
+```
 만약 이미지를 확대/축소하려면, GDI+를 사용하거나, 이미지를 리샘플링하는 방법을 사용할 수 있습니다. 기본적으로 MFC는 StretchBlt 함수나 CDC::DrawState 등을 사용하여 이미지를 그릴 수 있습니다.
 예를 들어, StretchBlt를 사용하여 비트맵을 확대/축소할 수 있습니다.
 ``` ruby
 CDC* pDC = GetDC();
 CImage image;
-image.Load(_T("image.bmp"));
+image.Load(_T("image.bmp")); //이미지 파일 로드
 int newWidth = image.GetWidth() * zoomFactor;
 int newHeight = image.GetHeight() * zoomFactor;
 image.StretchBlt(pDC->m_hDC, 0, 0, newWidth, newHeight, 0, 0, image.GetWidth(), image.GetHeight(), SRCCOPY);
 ReleaseDC(pDC);
 ```
+성능 최적화 : 확대/축소 기능을 구현할 때 성능을 고려해야 합니다. 이미지가 커지거나 복잡한 도형이 많을 경우, 오버드로잉(중복 그리기) 문제를 피하기 위해 더블 버퍼링을 사용할 수 있습니다. 또한, 확대/축소 후 화면 갱신 시 불필요한 계산을 줄여 성능을 최적화하는 것도 중요합니다.
