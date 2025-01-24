@@ -28,11 +28,11 @@ WM_MOUSEWHEEL 메시지는 마우스 휠이 돌아갈 때 발생합니다. 이 �
 ``` ruby
 BOOL CMyView::OnMouseWheel(UNIT nFlags, short zDelta, CPoint pt)
 {
-  if(zDelta > 0)
+  if(zDelta > 0) //휠 업: 확대
   {
     zoomFactor += 0.1;
   }
-  else if(zDelta < 0)
+  else if(zDelta < 0) //휠 다운: 축소
   {
     zoomFactor = max(0.1, zoomFactor - 0.1);
   }
@@ -40,4 +40,36 @@ BOOL CMyView::OnMouseWheel(UNIT nFlags, short zDelta, CPoint pt)
   Invalidate();
   return CView::OnMouseWheel(nFlags, zDelta, pt);
 }
+```
+Invalidate() 함수는 화면을 갱신하여, 확대/축소된 내용을 다시 그리도록 합니다. 이때, OnPaint 함수에서 다시 그리기를 할 수 있도록 합니다.
+``` ruby
+void CMyView::OnPaint()
+{
+  CPaintDC dc(this); //디바이스 컨텍스트 가져오기
+  dc.SetMapMode(MM_ANISOTROPIC); //비율 설정
+  dc.SetWindowExt(100, 100); //논리 좌표
+  dc.SetViewportExt(100 * zoomFactor, 100 * zoomFactor); //장치 좌표
+  //예시로 사각형 그리기
+  dc.Rectangle(10, 10, 90, 90);
+}
+```
+확대/축소 시 화면의 중심이 달라지는 문제를 해결하려면, 확대/축소 비율에 맞게 화면을 재조정해야 합니다. 이를 위해 스크롤 뷰를 활용하거나, 중심 좌표를 고정한 상태로 뷰를 갱신하는 방법을 사용할 수 있습니다.
+CScrollView는 스크롤 기능을 제공하며, 확대/축소 시 스크롤 바를 통해 화면을 이동할 수 있도록 도와줍니다. 확대/축소 비율이 변하면 스크롤 영역도 함께 조정되어 화면의 중심을 유지할 수 있습니다.
+``` ruby
+void CMyView::OnInitialUpdate()
+{
+  CScrollView::OnInitialUpdate();
+  //논리 좌표와 장치 좌표 설정
+  SetScrollSizes(MM_TEXT, CSize(100 * zoomFactor, 100 * zoomFactor));
+}
+만약 이미지를 확대/축소하려면, GDI+를 사용하거나, 이미지를 리샘플링하는 방법을 사용할 수 있습니다. 기본적으로 MFC는 StretchBlt 함수나 CDC::DrawState 등을 사용하여 이미지를 그릴 수 있습니다.
+예를 들어, StretchBlt를 사용하여 비트맵을 확대/축소할 수 있습니다.
+``` ruby
+CDC* pDC = GetDC();
+CImage image;
+image.Load(_T("image.bmp"));
+int newWidth = image.GetWidth() * zoomFactor;
+int newHeight = image.GetHeight() * zoomFactor;
+image.StretchBlt(pDC->m_hDC, 0, 0, newWidth, newHeight, 0, 0, image.GetWidth(), image.GetHeight(), SRCCOPY);
+ReleaseDC(pDC);
 ```
